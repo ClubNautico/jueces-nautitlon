@@ -134,7 +134,7 @@ h1{font:700 22px/1.1 var(--display);margin:0;flex:1;min-width:0;padding-top:3px}
   </div></header>
   <main class="zona">
     <div class="filtro" id="filtro" role="group" aria-label="Mostrar carril"></div>
-    <p class="aviso">Escribe solo números: 3245 es 32.45 y 10512 es 1:05.12. Cada pase es el tiempo de esos 50 m, no el acumulado. El tiempo final se llena con la suma de los pases y se puede corregir.</p>
+    <p class="aviso">Escribe solo números: 3245 es 32.45 y 10512 es 1:05.12. Cada pase es el tiempo de esos 50 m, no el acumulado. El tiempo final se llena con la suma de los pases y se puede corregir. Si no hay pases, basta con escribir el tiempo final.</p>
     <div id="carriles" style="display:grid;gap:12px"></div>
   </main>
   <nav class="abajo"><div>
@@ -190,7 +190,7 @@ function analiza(e,k){
   const hay=su.n||r.final;
   if(f.estado==='NS')r.tipo='ns';
   else if(f.estado==='DQ')r.tipo='dq';
-  else if(r.final&&!r.faltan&&r.dif==null&&!r.incompletos.length)r.tipo='ok';
+  else if(r.final&&(!su.n||!r.faltan)&&r.dif==null&&!r.incompletos.length)r.tipo='ok';
   else if(r.final)r.tipo='revisar';
   else if(hay||r.incompletos.length)r.tipo='parcial';
   return r;
@@ -230,7 +230,7 @@ function mensajes(e,a){
   if(a.tipo==='ns')return '';
   a.incompletos.forEach(d=>m.push(['mal',(d==='final'?'Tiempo final':d+' m')+': faltan números, no se guardó']));
   if(a.dif!=null)m.push(['','El final no coincide con la suma de pases ('+deCs(a.suma)+')']);
-  if(a.final&&a.faltan)m.push(['',a.faltan===1?'Falta 1 pase':'Faltan '+a.faltan+' pases']);
+  if(a.final&&a.faltan&&a.suma!=null)m.push(['',a.faltan===1?'Falta 1 pase':'Faltan '+a.faltan+' pases']);
   return m.map(x=>`<p class="msg ${x[0]}">${esc(x[1])}</p>`).join('');
 }
 function tarjeta(e,s,l){

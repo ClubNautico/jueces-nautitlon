@@ -107,6 +107,7 @@ h1{font:700 22px/1.1 var(--display);margin:0;flex:1;min-width:0;padding-top:3px}
 .entrada label{font-weight:700;font-size:14px;display:grid;gap:4px}
 .entrada input{min-height:48px;border:1.5px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);font:18px var(--body);padding:6px 12px;width:100%}
 .entrada button{min-height:52px;border:0;border-radius:10px;background:var(--brand);color:var(--card);font-weight:800;font-size:17px}
+.entrada button.ver{min-height:36px;justify-self:start;background:transparent;color:var(--brand);border:0;padding:0 2px;font-weight:700;font-size:14px}
 .entrada .error{color:var(--bad);font-weight:700;font-size:14px}
 </style>
 </head>
@@ -116,7 +117,8 @@ h1{font:700 22px/1.1 var(--display);margin:0;flex:1;min-width:0;padding-top:3px}
     <h1>V Nautitlón 2026</h1>
     <p>Jueves 5 de noviembre · Registro de tiempos y pases</p>
     <label for="e-nombre">Tu nombre<input id="e-nombre" required maxlength="40" autocapitalize="words"></label>
-    <label for="e-pin">PIN de la competencia<input id="e-pin" required type="text" maxlength="40" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <label for="e-pin">Contraseña de la competencia<input id="e-pin" required type="password" maxlength="40" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <button class="ver" id="e-ver" type="button" aria-pressed="false">Mostrar contraseña</button>
     <div class="error" id="e-error" role="alert" hidden></div>
     <button id="e-btn" type="submit">Entrar</button>
   </form>
@@ -357,6 +359,12 @@ function pintaEstado(){
   else if(n||inflight){c='env';t='Enviando…'}
   el.className='estado '+c;el.textContent=t;
 }
+function pinRechazado(){
+  // Los tiempos sin enviar siguen guardados en el celular y salen al volver a entrar.
+  cfg.pin='';store(K_CFG,cfg);$('prog').hidden=true;mostrarEntrada();
+  $('e-error').textContent='La contraseña guardada ya no es válida. Escribe la contraseña de la competencia.';$('e-error').hidden=false;
+}
+$('e-ver').onclick=()=>{const i=$('e-pin'),v=i.type==='password';i.type=v?'text':'password';$('e-ver').textContent=v?'Ocultar contraseña':'Mostrar contraseña';$('e-ver').setAttribute('aria-pressed',v)};
 async function llamar(cuerpo){
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),25000);
   try{
@@ -402,7 +410,7 @@ async function enviar(){
       sinRed=false;pinMalo=false;
       dat.pend=dat.pend.filter(k=>dat.filas[k].ts!==snap[k]);
       store(K_DAT,dat);aplicar(r.filas);
-    }else if(r.error==='pin'){pinMalo=true}
+    }else if(r.error==='pin'){pinRechazado()}
     else{sinRed=true}
   }catch(e){sinRed=true}
   inflight=false;pintaEstado();
@@ -414,7 +422,7 @@ async function leer(){
   try{
     const r=await llamar({accion:'leer',pin:cfg.pin});
     if(r.ok){sinRed=false;pinMalo=false;aplicar(r.filas)}
-    else if(r.error==='pin')pinMalo=true;
+    else if(r.error==='pin')pinRechazado();
   }catch(e){sinRed=true}
   pintaEstado();
 }
@@ -440,12 +448,18 @@ $('f-entrada').addEventListener('submit',async ev_=>{
   try{
     if(API){
       const r=await llamar({accion:'leer',pin});
-      if(r.ok===false&&r.error==='pin'){err.textContent='Ese PIN no es correcto. Pídelo a la mesa de control.';err.hidden=false;return}
-      if(r.filas)setTimeout(()=>aplicar(r.filas),0);
+      if(!r||r.ok!==true){
+        err.textContent=r&&r.error==='pin'?'Contraseña incorrecta. Pídela a la mesa de control.':'No se pudo comprobar la contraseña. Inténtalo de nuevo.';
+        err.hidden=false;return;
+      }
+      setTimeout(()=>aplicar(r.filas),0);
     }
-  }catch(e){sinRed=true}   // sin señal: entra igual y los tiempos esperan en el teléfono
+  }catch(e){   // sin comprobar no se entra; quien ya entró en este celular sigue trabajando sin señal
+    err.textContent='No se pudo comprobar la contraseña porque no hay conexión. Revisa la señal e inténtalo de nuevo.';
+    err.hidden=false;return;
+  }
   finally{$('e-btn').disabled=false;$('e-btn').textContent='Entrar'}
-  cfg.juez=juez;cfg.pin=pin;pinMalo=false;store(K_CFG,cfg);$('e-pin').value='';mostrarApp();
+  cfg.juez=juez;cfg.pin=pin;pinMalo=false;sinRed=false;store(K_CFG,cfg);$('e-pin').value='';mostrarApp();
 });
 if(cfg.pin&&cfg.juez)mostrarApp();else mostrarEntrada();
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}

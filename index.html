@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Jueces V Nautitlón</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Slab:wght@700&family=Open+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Mesa de control junto a la piscina: una tarjeta por carril, cifras grandes, alto contraste. Colores del club. */
+:root{
+  --bg:#F4F6FB;--card:#FFFFFF;--ink:#1E2430;--muted:#5A6478;--line:#D5DBEA;
+  --brand:#22409A;--hero:#1C3480;--on-hero:#FFFFFF;--on-hero-2:#C8CFE6;--amber:#FFC93C;
+  --ok:#14703F;--ok-bg:#DDF3E5;--warn:#8A5A00;--warn-bg:#FFF1CC;--bad:#B3261E;--bad-bg:#FCE3E1;
+  --field:#FFFFFF;--final:#EEF2FC;
+  --display:"Josefin Slab",Georgia,serif;--body:"Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0E1424;--card:#172038;--ink:#E8ECF5;--muted:#A5AFC6;--line:#2F3B5C;
+  --brand:#A9B9F3;--hero:#18244A;--on-hero:#FFFFFF;--on-hero-2:#C8CFE6;
+  --ok:#6FD79B;--ok-bg:#12331F;--warn:#FFD36B;--warn-bg:#3A2E0B;--bad:#FF9D96;--bad-bg:#431B19;
+  --field:#0E1424;--final:#1E2A4A;color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.35 var(--body);padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.tope{position:sticky;top:0;z-index:5;background:var(--hero);color:var(--on-hero);padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.tope-in,.zona{max-width:860px;margin:0 auto}
+.fila{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.btn-prog{background:transparent;border:1.5px solid var(--on-hero-2);color:var(--on-hero);border-radius:8px;padding:6px 12px;font-weight:700;font-size:14px;min-height:38px}
+.estado{font-size:13px;font-weight:700;padding:5px 10px;border-radius:99px;background:var(--ok-bg);color:var(--ok);white-space:nowrap}
+.estado.env{background:var(--final);color:var(--brand)}
+.estado.cola{background:var(--warn-bg);color:var(--warn)}
+.estado.mal{background:var(--bad-bg);color:var(--bad)}
+h1{font:700 22px/1.1 var(--display);margin:0;flex:1;min-width:0;padding-top:3px}
+.sub{color:var(--on-hero-2);font-size:14px;font-weight:600;margin-top:6px}
+.serie{display:flex;align-items:center;gap:10px;margin-top:2px;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.serie .hora{color:var(--amber)}
+.serie .cuenta{margin-left:auto;font-size:14px;font-weight:600;color:var(--on-hero-2)}
+.filtro{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:700;color:var(--muted)}
+.filtro button{flex:1;max-width:64px;min-height:36px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-weight:700}
+.filtro button[aria-pressed=true]{background:var(--amber);border-color:var(--amber);color:#1E2430}
+.zona{padding:12px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));display:grid;gap:12px}
+.aviso{font-size:13.5px;color:var(--muted);margin:0}
+.carril{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.carril.ok{border-color:var(--ok)}
+.carril.vacio{padding:8px 12px;color:var(--muted);font-size:14px;background:transparent;border-style:dashed}
+.cab{display:flex;align-items:center;gap:10px}
+.num{flex:none;width:38px;height:38px;border-radius:8px;background:var(--brand);color:var(--card);display:grid;place-items:center;font-weight:800;font-size:20px}
+.quien{min-width:0;flex:1}
+.nombre{font-weight:700;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+.edad{font-size:13px;color:var(--muted)}
+.chip{flex:none;font-size:12px;font-weight:800;padding:4px 8px;border-radius:6px}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.tiempos{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;margin-top:10px}
+.t label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:3px;white-space:nowrap}
+.t label b{color:var(--brand);font-weight:800}
+.t input{width:100%;min-height:46px;min-width:0;border:1.5px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);font:700 18px var(--body);font-variant-numeric:tabular-nums;text-align:center;padding:4px 2px}
+.t.final input{background:var(--final);border-color:var(--brand)}
+.t input.mal{border-color:var(--bad);background:var(--bad-bg)}
+.t input:focus{outline:3px solid var(--amber);outline-offset:0;border-color:var(--amber)}
+.par{display:block;min-height:17px;font-size:12px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums;margin-top:2px}
+.par.mal{color:var(--bad);font-weight:700}
+.msg{margin:8px 0 0;font-size:13px;font-weight:700;color:var(--warn)}
+.msg.mal{color:var(--bad)}
+.pie{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.pie button{min-height:38px;min-width:48px;padding:4px 12px;border-radius:8px;border:1.5px solid var(--line);background:transparent;font-weight:700;font-size:14px}
+.pie button[aria-pressed=true]{background:var(--bad);border-color:var(--bad);color:var(--card)}
+.firma{margin-left:auto;font-size:12px;color:var(--muted);text-align:right}
+.nota{width:100%;margin-top:8px;min-height:42px;border:1.5px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);font:16px var(--body);padding:6px 10px}
+.abajo{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.abajo div{max-width:860px;margin:0 auto;display:grid;grid-template-columns:1fr 2fr;gap:10px}
+.abajo button{min-height:50px;border-radius:10px;font-weight:800;border:1.5px solid var(--brand);background:transparent;color:var(--brand)}
+.abajo button.sig{background:var(--brand);color:var(--card)}
+.abajo button:disabled{opacity:.4}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:9;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:8px;font-weight:700;font-size:14px;max-width:calc(100% - 32px)}
+/* Programa */
+.prog{position:fixed;inset:0;z-index:8;background:var(--bg);overflow:auto;padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.prog-in{max-width:860px;margin:0 auto}
+.prog h2{font:700 24px var(--display);margin:0}
+.ev{padding:12px 0;border-bottom:1px solid var(--line)}
+.ev-t{font-weight:700;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chips button{min-height:40px;padding:2px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.chips button.done{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.chips button.warn{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+.chips button.part{border-color:var(--brand);color:var(--brand)}
+.chips button.aqui{outline:3px solid var(--amber)}
+.ley{font-size:13px;color:var(--muted);margin:8px 0 0}
+.salir{margin-top:18px;background:transparent;border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;font-weight:700;min-height:42px}
+/* Entrada */
+.entrada{min-height:100vh;display:grid;place-items:center;padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.entrada form{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:12px}
+.entrada h1{color:var(--brand);margin:0}
+.entrada p{margin:0;color:var(--muted);font-size:14px}
+.entrada label{font-weight:700;font-size:14px;display:grid;gap:4px}
+.entrada input{min-height:48px;border:1.5px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);font:18px var(--body);padding:6px 12px;width:100%}
+.entrada button{min-height:52px;border:0;border-radius:10px;background:var(--brand);color:var(--card);font-weight:800;font-size:17px}
+.entrada .error{color:var(--bad);font-weight:700;font-size:14px}
+</style>
+</head>
+<body>
+<section class="entrada" id="entrada" hidden>
+  <form id="f-entrada" autocomplete="off">
+    <h1>V Nautitlón 2026</h1>
+    <p>Jueves 5 de noviembre · Registro de tiempos y pases</p>
+    <label for="e-nombre">Tu nombre<input id="e-nombre" required maxlength="40" autocapitalize="words"></label>
+    <label for="e-pin">PIN de la competencia<input id="e-pin" required inputmode="numeric" maxlength="10" autocomplete="off"></label>
+    <div class="error" id="e-error" role="alert" hidden></div>
+    <button id="e-btn" type="submit">Entrar</button>
+  </form>
+</section>
+
+<div id="app" hidden>
+  <header class="tope"><div class="tope-in">
+    <div class="fila">
+      <button class="btn-prog" id="btn-prog" type="button" aria-label="Programa">☰</button>
+      <h1 id="t-prueba"></h1>
+      <span class="estado" id="estado" role="status">Guardado</span>
+    </div>
+    <div class="sub" id="t-sub"></div>
+    <div class="serie"><span id="t-serie"></span><span class="hora" id="t-hora"></span><span class="cuenta" id="t-cuenta"></span></div>
+  </div></header>
+  <main class="zona">
+    <div class="filtro" id="filtro" role="group" aria-label="Mostrar carril"></div>
+    <p class="aviso">Escribe solo los números del cronómetro: 3245 es 32.45 y 10512 es 1:05.12. Los pases son acumulados, tal como los marca el cronómetro.</p>
+    <div id="carriles" style="display:grid;gap:12px"></div>
+  </main>
+  <nav class="abajo"><div>
+    <button id="btn-ant" type="button">← Anterior</button>
+    <button id="btn-sig" class="sig" type="button">Siguiente serie →</button>
+  </div></nav>
+</div>
+
+<section class="prog" id="prog" hidden><div class="prog-in">
+  <div class="fila"><h2>Programa</h2><button class="btn-prog" style="color:var(--ink);border-color:var(--line)" id="btn-cerrar" type="button">Cerrar</button></div>
+  <p class="ley">Verde: serie completa. Amarillo: faltan pases o hay que revisar. Azul: en curso.</p>
+  <div id="lista"></div>
+  <button class="salir" id="btn-salir" type="button"></button>
+</div></section>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="config.js"></script>
+<script>
+const SEMBRADO=[{"n":18,"sexo":"DAMAS","cat":"24-70","dist":50,"estilo":"PECHO","grupo":"MÁSTERS","series":[{"n":1,"hora":"18:30","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Monica Lucia Escobar Salazar","edad":"64"},{"c":3,"nombre":"Mery Fernanda Cadena Escobar","edad":"67"},{"c":4,"nombre":"Vanessa Gabriela Castellanos Domingue","edad":"48"}]},{"n":2,"hora":"18:32","carriles":[{"c":1,"nombre":"Daniela Estefania Parra Godoy","edad":"30"},{"c":2,"nombre":"Carolina Nicole Coba Chavez","edad":"34"},{"c":3,"nombre":"Rosana Lorena Granja Martinez","edad":"41"},{"c":4,"nombre":"Maria Cristina Borja Cevallos","edad":"43"}]}]},{"n":19,"sexo":"VARONES","cat":"24-70","dist":50,"estilo":"PECHO","grupo":"MÁSTERS","series":[{"n":1,"hora":"18:34","carriles":[{"c":1,"nombre":"Jose Rafael Simbaña Perez","edad":"69"},{"c":2,"nombre":"Alex Fabricio Dominguez Guzman","edad":"50"},{"c":3,"nombre":"Flavio Ernesto Garrido Higuera","edad":"60"},{"c":4,"nombre":"Jorge Vinicio Idrovo Villagran","edad":"43"}]},{"n":2,"hora":"18:36","carriles":[{"c":1,"nombre":"Vicente León Tapia","edad":"43"},{"c":2,"nombre":"Leonardo Agustin Magno Altamirano","edad":"37"},{"c":3,"nombre":"Luis Alejandro Soria Chicaiza","edad":"40"},{"c":4,"nombre":"Alexis Geovanny Garces","edad":"35"}]},{"n":3,"hora":"18:38","carriles":[{"c":1,"nombre":"David Andres Villamarin Guerra","edad":"28"},{"c":2,"nombre":"Jose Fernando Estrella Cadena","edad":"34"},{"c":3,"nombre":"Mateo Granja","edad":"27"},{"c":4,"nombre":"Lucio Andre Rojas Galindo","edad":"30"}]}]},{"n":20,"sexo":"DAMAS","cat":"≤10","dist":50,"estilo":"PECHO","grupo":"CLASIFICADOS","series":[{"n":1,"hora":"18:40","carriles":[{"c":1,"nombre":"Sayla Anahi Farinango Jaramillo","edad":"< 9"},{"c":2,"nombre":"Flavia Isabel Gori Godoy","edad":"< 9"},{"c":3,"nombre":"Maria Isabella Marmol Gonzalez","edad":"< 9"},{"c":4,"nombre":"Paula Alejandra Salas Jara","edad":"< 9"}]},{"n":2,"hora":"18:42","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Andrea Shailyn Guerron Parra","edad":"10"},{"c":3,"nombre":"Martina Isabella Toro Arciniega","edad":"10"},{"c":4,"nombre":"Francisca Mariana Marmol Gonzalez","edad":"10"}]}]},{"n":21,"sexo":"VARONES","cat":"≤10","dist":50,"estilo":"PECHO","grupo":"CLASIFICADOS","series":[{"n":1,"hora":"18:44","carriles":[{"c":1,"nombre":"Bernardo Nicolas Rueda Rodríguez","edad":"10"},{"c":2,"nombre":"Leonardo Damian Chavez Balseca","edad":"10"},{"c":3,"nombre":"Eduardo Sebastian Caceres Barrera","edad":"10"},{"c":4,"nombre":"Hugo Andres Garcia Espinel","edad":"10"}]}]},{"n":22,"sexo":"DAMAS","cat":"11-23","dist":100,"estilo":"PECHO","grupo":"CLASIFICADOS","series":[{"n":1,"hora":"18:46","carriles":[{"c":1,"nombre":"Isabella Carolina Vivanco Neira","edad":"11"},{"c":2,"nombre":"Rafaela Muñoz Peñaherrera","edad":"11"},{"c":3,"nombre":"Renata Carolina Andrade Iza","edad":"11"},{"c":4,"nombre":"Valentina Rafaela Lagua Narvaez","edad":"12"}]},{"n":2,"hora":"18:48","carriles":[{"c":1,"nombre":"Anahi Stephanie Farinango Guaman","edad":"11"},{"c":2,"nombre":"Antonella Dominguez Castellano","edad":"13"},{"c":3,"nombre":"Fiorella Isabel Gori Godoy","edad":"11"},{"c":4,"nombre":"Sara Martina Proaño Maya","edad":"11"}]},{"n":3,"hora":"18:50","carriles":[{"c":1,"nombre":"Zara Cañaveral Velasco","edad":"16"},{"c":2,"nombre":"Salome Carvajal Ulloa","edad":"13"},{"c":3,"nombre":"Victoria Davila Rivadeneira","edad":"12"},{"c":4,"nombre":"Maria Cristina Marmol Gonzalez","edad":"11"}]},{"n":4,"hora":"18:52","carriles":[{"c":1,"nombre":"Diana Camila Molina Toscano","edad":"21"},{"c":2,"nombre":"Sofia Espejo Castro","edad":"12"},{"c":3,"nombre":"Domenica Stefania Recalde Villagomez","edad":"13"},{"c":4,"nombre":"Danna Lisbeth Cornejo Martillo","edad":"12"}]}]},{"n":23,"sexo":"VARONES","cat":"11-23","dist":100,"estilo":"PECHO","grupo":"CLASIFICADOS","series":[{"n":1,"hora":"18:54","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Ian Xavier Reyes Baca","edad":"13"},{"c":3,"nombre":"Christopher Paul Carrasco Knok","edad":"12"},{"c":4,"nombre":"Freddy Ismael Villacres Tapia","edad":"13"}]},{"n":2,"hora":"18:56","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Hugo Nicolas Torres Rodriguez","edad":"13"},{"c":3,"nombre":"Esteban Xavier Salas Jara","edad":"13"},{"c":4,"nombre":"Jaime Julian Cruz Borja","edad":"13"}]},{"n":3,"hora":"18:58","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Julian Ariel Mosquera Lasso","edad":"13"},{"c":3,"nombre":"Emilio Gabriel Contreras Muñoz","edad":"13"},{"c":4,"nombre":"Samuel Elias Muñoz Falconi","edad":"12"}]},{"n":4,"hora":"19:00","carriles":[{"c":1,"nombre":"Jose Daniel Reyes Nuñez","edad":"15"},{"c":2,"nombre":"Gustavo Sebastian Rodriguez Iza","edad":"12"},{"c":3,"nombre":"Pedro Jose Montalvo Cueva","edad":"14"},{"c":4,"nombre":"Kostas Alexander Pinilla Arvanitakis","edad":"15"}]},{"n":5,"hora":"19:02","carriles":[{"c":1,"nombre":"Julian Alejandro Muñoz Peñaherrera","edad":"14"},{"c":2,"nombre":"Hugo Sebastian Espejo Castro","edad":"14"},{"c":3,"nombre":"Luis Antonio Fonseca Cordova","edad":"17"},{"c":4,"nombre":"Jose Eduardo Rios Naranjo","edad":"12"}]}]},{"n":24,"sexo":"DAMAS","cat":"24-70","dist":50,"estilo":"MARIPOSA","grupo":"MÁSTERS","series":[{"n":1,"hora":"19:04","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Monica Lucia Escobar Salazar","edad":"64"},{"c":3,"nombre":"Mery Fernanda Cadena Escobar","edad":"67"},{"c":4,"nombre":"Vanessa Gabriela Castellanos Domingue","edad":"48"}]},{"n":2,"hora":"19:06","carriles":[{"c":1,"nombre":"Daniela Estefania Parra Godoy","edad":"30"},{"c":2,"nombre":"Carolina Nicole Coba Chavez","edad":"34"},{"c":3,"nombre":"Rosana Lorena Granja Martinez","edad":"41"},{"c":4,"nombre":"Maria Cristina Borja Cevallos","edad":"43"}]}]},{"n":25,"sexo":"VARONES","cat":"24-70","dist":50,"estilo":"MARIPOSA","grupo":"MÁSTERS","series":[{"n":1,"hora":"19:08","carriles":[{"c":1,"nombre":"Jose Rafael Simbaña Perez","edad":"69"},{"c":2,"nombre":"Alex Fabricio Dominguez Guzman","edad":"50"},{"c":3,"nombre":"Flavio Ernesto Garrido Higuera","edad":"60"},{"c":4,"nombre":"Jorge Vinicio Idrovo Villagran","edad":"43"}]},{"n":2,"hora":"19:10","carriles":[{"c":1,"nombre":"Vicente León Tapia","edad":"43"},{"c":2,"nombre":"Leonardo Agustin Magno Altamirano","edad":"37"},{"c":3,"nombre":"Luis Alejandro Soria Chicaiza","edad":"40"},{"c":4,"nombre":"Alexis Geovanny Garces","edad":"35"}]},{"n":3,"hora":"19:12","carriles":[{"c":1,"nombre":"Jose Fernando Estrella Cadena","edad":"34"},{"c":2,"nombre":"Lucio Andre Rojas Galindo","edad":"30"},{"c":3,"nombre":"David Andres Villamarin Guerra","edad":"28"},{"c":4,"nombre":"Mateo Granja","edad":"27"}]}]},{"n":26,"sexo":"DAMAS","cat":"≤10","dist":100,"estilo":"COMBINADO","grupo":"CLASIFICADOS","series":[{"n":1,"hora":"19:14","carriles":[{"c":1,"nombre":"Sayla Anahi Farinango Jaramillo","edad":"< 9"},{"c":2,"nombre":"Flavia Isabel Gori Godoy","edad":"< 9"},{"c":3,"nombre":"Maria Isabella Marmol Gonzalez","edad":"< 9"},{"c":4,"nombre":"Paula Alejandra Salas Jara","edad":"< 9"}]},{"n":2,"hora":"19:16","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Andrea Shailyn Guerron Parra","edad":"10"},{"c":3,"nombre":"Martina Isabella Toro Arciniega","edad":"10"},{"c":4,"nombre":"Francisca Mariana Marmol Gonzalez","edad":"10"}]}]},{"n":27,"sexo":"VARONES","cat":"≤10","dist":100,"estilo":"COMBINADO","grupo":"CLASIFICADOS","series":[{"n":1,"hora":"19:18","carriles":[{"c":1,"nombre":"Leonardo Damian Chavez Balseca","edad":"10"},{"c":2,"nombre":"Eduardo Sebastian Caceres Barrera","edad":"10"},{"c":3,"nombre":"Bernardo Nicolas Rueda Rodríguez","edad":"10"},{"c":4,"nombre":"Hugo Andres Garcia Espinel","edad":"10"}]}]},{"n":28,"sexo":"DAMAS","cat":"11-23","dist":200,"estilo":"COMBINADO","grupo":"CLASIFICADOS","series":[{"n":1,"hora":"19:20","carriles":[{"c":1,"nombre":"Zara Cañaveral Velasco","edad":"16"},{"c":2,"nombre":"Isabella Carolina Vivanco Neira","edad":"11"},{"c":3,"nombre":"Renata Carolina Andrade Iza","edad":"11"},{"c":4,"nombre":"Valentina Rafaela Lagua Narvaez","edad":"12"}]},{"n":2,"hora":"19:23","carriles":[{"c":1,"nombre":"Anahi Stephanie Farinango Guaman","edad":"11"},{"c":2,"nombre":"Fiorella Isabel Gori Godoy","edad":"11"},{"c":3,"nombre":"Rafaela Muñoz Peñaherrera","edad":"11"},{"c":4,"nombre":"Sara Martina Proaño Maya","edad":"11"}]},{"n":3,"hora":"19:26","carriles":[{"c":1,"nombre":"Salome Carvajal Ulloa","edad":"13"},{"c":2,"nombre":"Antonella Dominguez Castellano","edad":"13"},{"c":3,"nombre":"Maria Cristina Marmol Gonzalez","edad":"11"},{"c":4,"nombre":"Victoria Davila Rivadeneira","edad":"12"}]},{"n":4,"hora":"19:29","carriles":[{"c":1,"nombre":"Diana Camila Molina Toscano","edad":"21"},{"c":2,"nombre":"Domenica Stefania Recalde Villagomez","edad":"13"},{"c":3,"nombre":"Sofia Espejo Castro","edad":"12"},{"c":4,"nombre":"Danna Lisbeth Cornejo Martillo","edad":"12"}]}]},{"n":29,"sexo":"VARONES","cat":"11-23","dist":200,"estilo":"COMBINADO","grupo":"CLASIFICADOS","series":[{"n":1,"hora":"19:32","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Jaime Julian Cruz Borja","edad":"13"},{"c":3,"nombre":"Freddy Ismael Villacres Tapia","edad":"13"},{"c":4,"nombre":"Christopher Paul Carrasco Knok","edad":"12"}]},{"n":2,"hora":"19:35","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Samuel Elias Muñoz Falconi","edad":"12"},{"c":3,"nombre":"Hugo Nicolas Torres Rodriguez","edad":"13"},{"c":4,"nombre":"Gustavo Sebastian Rodriguez Iza","edad":"12"}]},{"n":3,"hora":"19:38","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Julian Ariel Mosquera Lasso","edad":"13"},{"c":3,"nombre":"Esteban Xavier Salas Jara","edad":"13"},{"c":4,"nombre":"Pedro Jose Montalvo Cueva","edad":"14"}]},{"n":4,"hora":"19:41","carriles":[{"c":1,"nombre":"Luis Antonio Fonseca Cordova","edad":"17"},{"c":2,"nombre":"Ian Xavier Reyes Baca","edad":"13"},{"c":3,"nombre":"Julian Alejandro Muñoz Peñaherrera","edad":"14"},{"c":4,"nombre":"Emilio Gabriel Contreras Muñoz","edad":"13"}]},{"n":5,"hora":"19:44","carriles":[{"c":1,"nombre":"Hugo Sebastian Espejo Castro","edad":"14"},{"c":2,"nombre":"Jose Daniel Reyes Nuñez","edad":"15"},{"c":3,"nombre":"Kostas Alexander Pinilla Arvanitakis","edad":"15"},{"c":4,"nombre":"Jose Eduardo Rios Naranjo","edad":"12"}]}]},{"n":30,"sexo":"DAMAS","cat":"24-70","dist":100,"estilo":"COMBINADO","grupo":"MÁSTERS","series":[{"n":1,"hora":"19:47","carriles":[{"c":1,"nombre":null,"edad":null},{"c":2,"nombre":"Monica Lucia Escobar Salazar","edad":"64"},{"c":3,"nombre":"Mery Fernanda Cadena Escobar","edad":"67"},{"c":4,"nombre":"Vanessa Gabriela Castellanos Domingue","edad":"48"}]},{"n":2,"hora":"19:49","carriles":[{"c":1,"nombre":"Daniela Estefania Parra Godoy","edad":"30"},{"c":2,"nombre":"Carolina Nicole Coba Chavez","edad":"34"},{"c":3,"nombre":"Rosana Lorena Granja Martinez","edad":"41"},{"c":4,"nombre":"Maria Cristina Borja Cevallos","edad":"43"}]}]},{"n":31,"sexo":"VARONES","cat":"24-70","dist":100,"estilo":"COMBINADO","grupo":"MÁSTERS","series":[{"n":1,"hora":"19:51","carriles":[{"c":1,"nombre":"Lucio Andre Rojas Galindo","edad":"30"},{"c":2,"nombre":"Jose Fernando Estrella Cadena","edad":"34"},{"c":3,"nombre":"David Andres Villamarin Guerra","edad":"28"},{"c":4,"nombre":"Mateo Granja","edad":"27"}]},{"n":2,"hora":"19:53","carriles":[{"c":1,"nombre":"Jorge Vinicio Idrovo Villagran","edad":"43"},{"c":2,"nombre":"Leonardo Agustin Magno Altamirano","edad":"37"},{"c":3,"nombre":"Luis Alejandro Soria Chicaiza","edad":"40"},{"c":4,"nombre":"Alexis Geovanny Garces","edad":"35"}]},{"n":3,"hora":"19:55","carriles":[{"c":1,"nombre":"Flavio Ernesto Garrido Higuera","edad":"60"},{"c":2,"nombre":"Alex Fabricio Dominguez Guzman","edad":"50"},{"c":3,"nombre":"Vicente León Tapia","edad":"43"},{"c":4,"nombre":"Jose Rafael Simbaña Perez","edad":"69"}]}]}];
+const API=(window.CONFIG&&window.CONFIG.api)||'';
+const K_CFG='jn_cfg_v1',K_DAT='jn_dat_v1';
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
+const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const titulo=s=>s.charAt(0)+s.slice(1).toLowerCase();
+
+let cfg=load(K_CFG,{pin:'',juez:'',carril:0,e:null,s:0});
+let dat=load(K_DAT,{filas:{},pend:[]});
+const drafts={};        // textos a medio escribir: "clave|distancia" -> texto
+const notaAbierta={};
+let inflight=false,pinMalo=false,sinRed=false,tSave=null;
+
+const ev=()=>SEMBRADO[cfg.e];
+const clave=(e,s,c)=>e.n+'-'+s.n+'-'+c;
+const fila=k=>dat.filas[k]||{estado:'',t:{},nota:'',juez:'',ts:0};
+
+/* ---------- tiempos ---------- */
+function fmt(d){if(d.length<=2)return d;const cc=d.slice(-2),r=d.slice(0,-2);if(r.length<=2)return r+'.'+cc;return r.slice(0,-2)+':'+r.slice(-2)+'.'+cc}
+function validos(d){if(d.length<3)return false;const r=d.slice(0,-2);const seg=+r.slice(-2);if(seg>59)return false;const min=r.length>2?+r.slice(0,-2):0;if(min>59)return false;return +d>0}
+function aCs(t){const m=/^(?:(\d+):)?(\d+)\.(\d\d)$/.exec(t||'');return m?(+(m[1]||0))*6000+(+m[2])*100+(+m[3]):null}
+function deCs(c){const min=Math.floor(c/6000),s=Math.floor(c%6000/100),cc=c%100;const p=n=>String(n).padStart(2,'0');return min?min+':'+p(s)+'.'+p(cc):s+'.'+p(cc)}
+const distancias=e=>{const a=[];for(let d=25;d<=e.dist;d+=25)a.push(d);return a};
+function estiloDe(e,d){if(e.estilo!=='COMBINADO')return '';const o=['Mar','Esp','Pec','Lib'];return o[Math.ceil(d/(e.dist/4))-1]}
+
+function analiza(e,k){
+  const f=fila(k),ds=distancias(e);
+  const r={tipo:'vacio',faltan:0,orden:[],incompletos:[]};
+  ds.forEach(d=>{if(drafts[k+'|'+d])r.incompletos.push(d)});
+  let prev=0;ds.forEach(d=>{const c=aCs(f.t[d]);if(c!=null){if(c<=prev)r.orden.push(d);prev=c}});
+  const hay=ds.filter(d=>f.t[d]).length,fin=!!f.t[e.dist];
+  r.faltan=ds.length-hay;r.final=fin;
+  if(f.estado==='NS')r.tipo='ns';
+  else if(f.estado==='DQ')r.tipo='dq';
+  else if(fin&&!r.faltan&&!r.orden.length&&!r.incompletos.length)r.tipo='ok';
+  else if(fin)r.tipo='revisar';
+  else if(hay||r.incompletos.length)r.tipo='parcial';
+  return r;
+}
+function estadoSerie(e,s){
+  let n=0,ok=0,rev=0,par=0;
+  s.carriles.forEach(l=>{if(!l.nombre)return;n++;const a=analiza(e,clave(e,s,l.c));
+    if(a.tipo==='ok'||a.tipo==='ns'||a.tipo==='dq')ok++;else if(a.tipo==='revisar')rev++;else if(a.tipo==='parcial')par++});
+  return{n,ok,rev,par,clase:ok===n?'done':(ok+rev===n?'warn':((ok||rev||par)?(rev?'warn':'part'):''))};
+}
+
+/* ---------- vista ---------- */
+function pintar(){
+  const e=ev(),s=e.series[cfg.s];
+  $('t-prueba').textContent='#'+e.n+' '+titulo(e.sexo)+' '+e.cat;
+  $('t-sub').textContent=e.dist+' '+titulo(e.estilo)+' · '+titulo(e.grupo)+' · '+(e.dist/25)+' largos';
+  $('t-serie').textContent='Serie '+s.n+' de '+e.series.length;
+  $('t-hora').textContent=s.hora;
+  $('filtro').innerHTML='<span>Carril</span>'+[0,1,2,3,4].map(c=>`<button type="button" data-c="${c}" aria-pressed="${cfg.carril===c}">${c||'Todos'}</button>`).join('');
+  $('carriles').innerHTML=s.carriles.filter(l=>!cfg.carril||l.c===cfg.carril).map(l=>tarjeta(e,s,l)).join('');
+  cuenta();
+  const pos=posicion();$('btn-ant').disabled=pos===0;
+  const ult=pos===ORDEN.length-1;$('btn-sig').disabled=ult;$('btn-sig').textContent=ult?'Última serie':'Siguiente serie →';
+  store(K_CFG,cfg);
+}
+function cuenta(){const e=ev(),st=estadoSerie(e,e.series[cfg.s]);$('t-cuenta').textContent=st.ok+' de '+st.n+' listos'}
+
+function chipDe(a,f){
+  if(a.tipo==='ns')return '<span class="chip bad">NS</span>';
+  if(a.tipo==='dq')return '<span class="chip bad">DQ</span>';
+  if(a.tipo==='ok')return '<span class="chip ok">✓ '+esc(f.t&&'Listo')+'</span>';
+  if(a.tipo==='revisar')return '<span class="chip warn">Revisar</span>';
+  return '';
+}
+function mensajes(e,a){
+  const m=[];
+  if(a.tipo==='ns')return '';
+  a.incompletos.forEach(d=>m.push(['mal',d+' m: faltan números, no se guardó']));
+  a.orden.forEach(d=>m.push(['mal',d+' m: es menor o igual que el pase anterior']));
+  if(a.final&&a.faltan)m.push(['',a.faltan===1?'Falta 1 pase':'Faltan '+a.faltan+' pases']);
+  return m.map(x=>`<p class="msg ${x[0]}">${esc(x[1])}</p>`).join('');
+}
+function tarjeta(e,s,l){
+  if(!l.nombre)return `<div class="carril vacio">Carril ${l.c} vacío</div>`;
+  const k=clave(e,s,l.c),f=fila(k),a=analiza(e,k),ds=distancias(e),ns=f.estado==='NS';
+  const campos=ds.map((d,i)=>{
+    const dr=drafts[k+'|'+d],val=dr||f.t[d]||'';
+    const mal=dr||a.orden.includes(d);
+    const est=estiloDe(e,d);
+    return `<div class="t ${d===e.dist?'final':''}"><label for="i-${k}-${d}"><b>${d===e.dist?d+' Final':d}</b>${est&&d!==e.dist?' '+est:(d===e.dist?'':' m')}</label>
+      <input id="i-${k}-${d}" data-k="${k}" data-d="${d}" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="${i===ds.length-1?'done':'next'}" maxlength="8" value="${esc(val)}" class="${mal?'mal':''}">
+      <span class="par ${a.orden.includes(d)?'mal':''}" id="p-${k}-${d}">${parcial(f,ds,i)}</span></div>`}).join('');
+  const hora=f.ts?new Date(f.ts).toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'}):'';
+  const abierta=notaAbierta[k]||f.nota;
+  return `<article class="carril ${['ok','ns','dq'].includes(a.tipo)?'ok':''}" id="c-${k}" data-k="${k}">
+    <div class="cab"><div class="num">${l.c}</div><div class="quien"><div class="nombre">${esc(l.nombre)}</div><div class="edad">${l.edad==='< 9'?'Menor de 9 años':esc(l.edad)+' años'}</div></div><span id="chip-${k}">${chipDe(a,f)}</span></div>
+    ${ns?'':`<div class="tiempos">${campos}</div>`}
+    <div id="msg-${k}">${mensajes(e,a)}</div>
+    ${abierta?`<input class="nota" id="n-${k}" data-nota="${k}" maxlength="120" placeholder="Nota: motivo del DQ, cambio de nadador…" value="${esc(f.nota||'')}">`:''}
+    <div class="pie">
+      <button type="button" data-act="NS" aria-pressed="${ns}">NS</button>
+      <button type="button" data-act="DQ" aria-pressed="${f.estado==='DQ'}">DQ</button>
+      ${abierta?'':'<button type="button" data-act="nota">Nota</button>'}
+      <span class="firma">${f.juez?esc(f.juez)+(hora?' · '+hora:''):''}</span>
+    </div></article>`;
+}
+function parcial(f,ds,i){
+  if(i===0)return '';
+  const a=aCs(f.t[ds[i]]),b=aCs(f.t[ds[i-1]]);
+  if(a==null||b==null)return '';
+  return a>b?'+'+deCs(a-b):'revisar';
+}
+function refrescaDerivados(k){
+  const e=ev(),s=e.series[cfg.s];const c=+k.split('-')[2];
+  const f=fila(k),a=analiza(e,k),ds=distancias(e);
+  ds.forEach((d,i)=>{
+    const inp=$('i-'+k+'-'+d),p=$('p-'+k+'-'+d);if(!inp)return;
+    inp.classList.toggle('mal',!!drafts[k+'|'+d]||a.orden.includes(d));
+    p.textContent=parcial(f,ds,i);p.classList.toggle('mal',a.orden.includes(d));
+  });
+  const m=$('msg-'+k);if(m)m.innerHTML=mensajes(e,a);
+  const ch=$('chip-'+k);if(ch)ch.innerHTML=chipDe(a,f);
+  const card=$('c-'+k);if(card)card.classList.toggle('ok',['ok','ns','dq'].includes(a.tipo));
+  cuenta();
+}
+
+/* ---------- edición ---------- */
+function toca(k,cambio){
+  const f=Object.assign({estado:'',t:{},nota:'',juez:'',ts:0},dat.filas[k]);f.t=Object.assign({},f.t);
+  cambio(f);f.juez=cfg.juez;f.ts=Date.now();
+  dat.filas[k]=f;if(!dat.pend.includes(k))dat.pend.push(k);
+  store(K_DAT,dat);pintaEstado();
+  clearTimeout(tSave);tSave=setTimeout(enviar,700);
+}
+document.addEventListener('input',ev_=>{
+  const el=ev_.target;
+  if(el.dataset&&el.dataset.nota){const k=el.dataset.nota;toca(k,f=>{f.nota=el.value.slice(0,120)});return}
+  if(!el.dataset||!el.dataset.d)return;
+  const k=el.dataset.k,d=el.dataset.d;
+  const dig=el.value.replace(/\D/g,'').replace(/^0+/,'').slice(0,6);
+  const txt=fmt(dig);el.value=txt;
+  const dk=k+'|'+d;
+  if(!dig){delete drafts[dk];if(fila(k).t[d])toca(k,f=>{delete f.t[d]})}
+  else if(validos(dig)){delete drafts[dk];if(fila(k).t[d]!==txt)toca(k,f=>{f.t[d]=txt})}
+  else{drafts[dk]=txt;if(fila(k).t[d])toca(k,f=>{delete f.t[d]})}
+  refrescaDerivados(k);
+});
+document.addEventListener('keydown',e_=>{
+  if(e_.key!=='Enter'||!e_.target.dataset||!e_.target.dataset.d)return;
+  e_.preventDefault();
+  const todos=[...document.querySelectorAll('#carriles input[data-d]')];
+  const i=todos.indexOf(e_.target);if(todos[i+1])todos[i+1].focus();else e_.target.blur();
+});
+$('carriles').addEventListener('click',e_=>{
+  const b=e_.target.closest('button[data-act]');if(!b)return;
+  const k=b.closest('.carril').dataset.k,act=b.dataset.act;
+  if(act==='nota'){notaAbierta[k]=true}
+  else{toca(k,f=>{f.estado=f.estado===act?'':act});if(act==='NS')distancias(ev()).forEach(d=>delete drafts[k+'|'+d])}
+  pintar();
+  if(act==='nota'){const n=$('n-'+k);if(n)n.focus()}
+});
+$('filtro').addEventListener('click',e_=>{const b=e_.target.closest('button[data-c]');if(!b)return;cfg.carril=+b.dataset.c;pintar()});
+
+/* ---------- navegación ---------- */
+const ORDEN=[];SEMBRADO.forEach((e,i)=>e.series.forEach((s,j)=>ORDEN.push([i,j])));
+const posicion=()=>ORDEN.findIndex(p=>p[0]===cfg.e&&p[1]===cfg.s);
+function aviso(t){const x=$('toast');x.textContent=t;x.hidden=false;clearTimeout(aviso.t);aviso.t=setTimeout(()=>x.hidden=true,3500)}
+function ir(p){
+  const e=ev(),s=e.series[cfg.s];
+  const pend=s.carriles.filter(l=>l.nombre&&distancias(e).some(d=>drafts[clave(e,s,l.c)+'|'+d])).map(l=>l.c);
+  if(pend.length)aviso('Carril '+pend.join(', ')+': quedó un tiempo sin completar');
+  cfg.e=p[0];cfg.s=p[1];pintar();window.scrollTo(0,0);
+}
+$('btn-ant').onclick=()=>{const p=posicion();if(p>0)ir(ORDEN[p-1])};
+$('btn-sig').onclick=()=>{const p=posicion();if(p<ORDEN.length-1)ir(ORDEN[p+1])};
+$('btn-prog').onclick=()=>{pintaLista();$('prog').hidden=false;$('prog').scrollTop=0};
+$('btn-cerrar').onclick=()=>{$('prog').hidden=true};
+function pintaLista(){
+  $('lista').innerHTML=SEMBRADO.map((e,i)=>`<div class="ev"><div class="ev-t">#${e.n} ${esc(titulo(e.sexo))} ${esc(e.cat)} · ${e.dist} ${esc(titulo(e.estilo))}</div><div class="chips">`+
+    e.series.map((s,j)=>{const st=estadoSerie(e,s);return `<button type="button" data-p="${i},${j}" class="${st.clase} ${i===cfg.e&&j===cfg.s?'aqui':''}">S${s.n} · ${s.hora}</button>`}).join('')+'</div></div>').join('');
+  $('btn-salir').textContent='Cambiar juez ('+cfg.juez+')';
+}
+$('lista').addEventListener('click',e_=>{const b=e_.target.closest('button[data-p]');if(!b)return;const p=b.dataset.p.split(',').map(Number);$('prog').hidden=true;ir(p)});
+$('btn-salir').onclick=()=>{cfg.pin='';cfg.juez='';store(K_CFG,cfg);$('prog').hidden=true;mostrarEntrada()};
+
+/* ---------- sincronización ---------- */
+function pintaEstado(){
+  const el=$('estado'),n=dat.pend.length;
+  let c='',t='Guardado';
+  if(pinMalo){c='mal';t='PIN incorrecto'}
+  else if(!API){c='cola';t='Sin conectar'}
+  else if(sinRed&&n){c='cola';t=n+' sin enviar'}
+  else if(sinRed){c='cola';t='Sin señal'}
+  else if(n||inflight){c='env';t='Enviando…'}
+  el.className='estado '+c;el.textContent=t;
+}
+async function llamar(cuerpo){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),25000);
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(cuerpo),signal:ctl.signal,redirect:'follow'});
+    return await r.json();
+  }finally{clearTimeout(to)}
+}
+function aplicar(filas){
+  if(!filas)return;
+  const cambiados=[];
+  filas.forEach(sf=>{
+    const lo=dat.filas[sf.k];
+    if(dat.pend.includes(sf.k))return;
+    if(lo&&lo.ts>=sf.ts)return;
+    dat.filas[sf.k]={estado:sf.estado||'',t:sf.t||{},nota:sf.nota||'',juez:sf.juez||'',ts:sf.ts};
+    cambiados.push(sf.k);
+  });
+  if(!cambiados.length)return;
+  store(K_DAT,dat);
+  if(!cfg.pin||$('app').hidden)return;
+  const e=ev(),s=e.series[cfg.s];
+  cambiados.forEach(k=>{
+    const[pe,ps,pc]=k.split('-').map(Number);
+    if(pe!==e.n||ps!==s.n)return;
+    const c=$('c-'+k);if(!c)return;
+    if(c.contains(document.activeElement))return;           // no pisar a quien está escribiendo
+    if(distancias(e).some(d=>drafts[k+'|'+d]))return;
+    const l=s.carriles.find(x=>x.c===pc);
+    const tmp=document.createElement('div');tmp.innerHTML=tarjeta(e,s,l);c.replaceWith(tmp.firstElementChild);
+  });
+  cuenta();
+}
+async function enviar(){
+  if(!API){dat.pend=[];store(K_DAT,dat);pintaEstado();return}
+  if(inflight||!cfg.pin)return;
+  const llevar=dat.pend.slice(),snap={};
+  if(!llevar.length)return;
+  const items=llevar.map(k=>{const f=dat.filas[k];snap[k]=f.ts;return{k,estado:f.estado,t:f.t,nota:f.nota,juez:f.juez,ts:f.ts}});
+  inflight=true;pintaEstado();
+  try{
+    const r=await llamar({accion:'guardar',pin:cfg.pin,items});
+    if(r.ok){
+      sinRed=false;pinMalo=false;
+      dat.pend=dat.pend.filter(k=>dat.filas[k].ts!==snap[k]);
+      store(K_DAT,dat);aplicar(r.filas);
+    }else if(r.error==='pin'){pinMalo=true}
+    else{sinRed=true}
+  }catch(e){sinRed=true}
+  inflight=false;pintaEstado();
+  if(dat.pend.length&&!pinMalo)setTimeout(enviar,sinRed?8000:300);
+}
+async function leer(){
+  if(!API||!cfg.pin||inflight||document.hidden)return;
+  if(dat.pend.length){enviar();return}
+  try{
+    const r=await llamar({accion:'leer',pin:cfg.pin});
+    if(r.ok){sinRed=false;pinMalo=false;aplicar(r.filas)}
+    else if(r.error==='pin')pinMalo=true;
+  }catch(e){sinRed=true}
+  pintaEstado();
+}
+window.addEventListener('online',()=>{sinRed=false;enviar()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){leer();pedirPantalla()}});
+setInterval(leer,20000);
+
+/* ---------- arranque ---------- */
+let wake=null;
+async function pedirPantalla(){try{if(navigator.wakeLock&&!wake){wake=await navigator.wakeLock.request('screen');wake.addEventListener('release',()=>wake=null)}}catch(e){}}
+function primeraPendiente(){for(const p of ORDEN){const e=SEMBRADO[p[0]];if(estadoSerie(e,e.series[p[1]]).clase!=='done')return p}return ORDEN[0]}
+function mostrarEntrada(){$('app').hidden=true;$('entrada').hidden=false;$('e-nombre').value=cfg.juez||''}
+function mostrarApp(){
+  $('entrada').hidden=true;$('app').hidden=false;
+  if(cfg.e==null||!SEMBRADO[cfg.e]||!SEMBRADO[cfg.e].series[cfg.s]){const p=primeraPendiente();cfg.e=p[0];cfg.s=p[1]}
+  pintar();pintaEstado();pedirPantalla();leer();if(dat.pend.length)enviar();
+}
+$('f-entrada').addEventListener('submit',async ev_=>{
+  ev_.preventDefault();
+  const juez=$('e-nombre').value.trim(),pin=$('e-pin').value.trim(),err=$('e-error');err.hidden=true;
+  if(!juez||!pin)return;
+  $('e-btn').disabled=true;$('e-btn').textContent='Comprobando…';
+  try{
+    if(API){
+      const r=await llamar({accion:'leer',pin});
+      if(r.ok===false&&r.error==='pin'){err.textContent='Ese PIN no es correcto. Pídelo a la mesa de control.';err.hidden=false;return}
+      if(r.filas)setTimeout(()=>aplicar(r.filas),0);
+    }
+  }catch(e){sinRed=true}   // sin señal: entra igual y los tiempos esperan en el teléfono
+  finally{$('e-btn').disabled=false;$('e-btn').textContent='Entrar'}
+  cfg.juez=juez;cfg.pin=pin;pinMalo=false;store(K_CFG,cfg);$('e-pin').value='';mostrarApp();
+});
+if(cfg.pin&&cfg.juez)mostrarApp();else mostrarEntrada();
+if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>

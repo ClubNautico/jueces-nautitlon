@@ -13,7 +13,7 @@
   --bg:#F4F6FB;--card:#FFFFFF;--ink:#1E2430;--muted:#5A6478;--line:#D5DBEA;
   --brand:#22409A;--hero:#1C3480;--on-hero:#FFFFFF;--on-hero-2:#C8CFE6;--amber:#FFC93C;
   --ok:#14703F;--ok-bg:#DDF3E5;--warn:#8A5A00;--warn-bg:#FFF1CC;--bad:#B3261E;--bad-bg:#FCE3E1;
-  --field:#FFFFFF;--final:#EEF2FC;
+  --field:#FFFFFF;--final:#EEF2FC;--bad-solido:#B3261E;
   --display:"Josefin Slab",Georgia,serif;--body:"Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root{
@@ -58,6 +58,13 @@ h1{font:700 22px/1.1 var(--display);margin:0;flex:1;min-width:0;padding-top:3px}
 .chip.warn{background:var(--warn-bg);color:var(--warn)}
 .chip.bad{background:var(--bad-bg);color:var(--bad)}
 .tiempos{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;margin-top:10px}
+.cro{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding:8px;border-radius:8px;background:var(--hero)}
+.cro-t{flex:1 1 150px;color:var(--on-hero);font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.5px;padding-left:4px;white-space:nowrap}
+.cro.corre .cro-t{color:var(--amber)}
+.cro-b{flex:1 1 150px;display:flex;gap:8px}
+.cro-b button{flex:1;min-height:52px;border-radius:8px;border:0;background:var(--amber);color:#1E2430;font-weight:800;font-size:15px;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.cro-b button.sec{background:transparent;border:1.5px solid var(--on-hero-2);color:var(--on-hero)}
+.cro-b button.parar{background:var(--bad-solido);color:#FFFFFF}
 .final-fila{display:flex;align-items:flex-end;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
 .final-fila .t{flex:0 0 132px}
 .final-fila input{font-size:21px;min-height:50px}
@@ -136,7 +143,7 @@ h1{font:700 22px/1.1 var(--display);margin:0;flex:1;min-width:0;padding-top:3px}
   </div></header>
   <main class="zona">
     <div class="filtro" id="filtro" role="group" aria-label="Mostrar carril"></div>
-    <p class="aviso">Escribe solo números: 3245 es 32.45 y 10512 es 1:05.12. Cada pase es el tiempo de esos 50 m, no el acumulado. El tiempo final se llena con la suma de los pases y se puede corregir. Si no hay pases, basta con escribir el tiempo final.</p>
+    <p class="aviso">Escribe solo números: 3245 es 32.45 y 10512 es 1:05.12. Cada pase es el tiempo de esos 50 m, no el acumulado. El tiempo final se llena con la suma de los pases y se puede corregir. Si no hay pases, basta con escribir el tiempo final. También puedes usar el cronómetro de cada carril: Pase anota cada 50 m y Parar anota el final.</p>
     <div id="carriles" style="display:grid;gap:12px"></div>
   </main>
   <nav class="abajo"><div>
@@ -251,7 +258,7 @@ function tarjeta(e,s,l){
   const abierta=notaAbierta[k]||f.nota;
   return `<article class="carril ${['ok','ns','dq'].includes(a.tipo)?'ok':''}" id="c-${k}" data-k="${k}">
     <div class="cab"><div class="num">${l.c}</div><div class="quien"><div class="nombre">${esc(l.nombre)}</div><div class="edad">${l.edad==='< 9'?'Menor de 9 años':esc(l.edad)+' años'}</div></div><span id="chip-${k}">${chipDe(a,f)}</span></div>
-    ${ns?'':`<div class="tiempos">${campos}</div>${cajaFinal}`}
+    ${ns?'':`<div class="cro ${cros[k]&&cros[k].fin==null?'corre':''}" id="cro-${k}">${croHtml(e,k)}</div><div class="tiempos">${campos}</div>${cajaFinal}`}
     <div id="msg-${k}">${mensajes(e,a)}</div>
     ${abierta?`<input class="nota" id="n-${k}" data-nota="${k}" maxlength="120" placeholder="Nota: motivo del DQ, cambio de nadador…" value="${esc(f.nota||'')}">`:''}
     <div class="pie">
@@ -325,6 +332,80 @@ $('carriles').addEventListener('click',e_=>{
   if(act==='nota'){const n=$('n-'+k);if(n)n.focus()}
 });
 $('filtro').addEventListener('click',e_=>{const b=e_.target.closest('button[data-c]');if(!b)return;cfg.carril=+b.dataset.c;pintar()});
+
+/* ---------- cronómetro ---------- */
+const K_CRO='jn_cro_v1';
+const cros=load(K_CRO,{});          // clave -> {p:inicio en reloj de alta precisión, d:inicio en reloj del sistema, laps:[ms], fin:ms|null}
+const croArm={};
+let ultimoToque=null;
+const guardaCros=()=>store(K_CRO,cros);
+function msEn(c,t){
+  // t es una marca de performance.now(). Si el teléfono se durmió, ese reloj pudo pausarse: entonces manda el del sistema.
+  const p=performance.timeOrigin+t-c.p,d=Date.now()-(performance.now()-t)-c.d;
+  return Math.abs(p-d)>500?d:p;
+}
+function fmtMs(ms){
+  const v=Math.max(0,Math.floor(ms)),m=Math.floor(v/60000),se=Math.floor(v%60000/1000),mi=v%1000;
+  return String(m).padStart(2,'0')+':'+String(se).padStart(2,'0')+'.'+String(mi).padStart(3,'0');
+}
+function croHtml(e,k){
+  const c=cros[k],ds=distancias(e);
+  let b;
+  if(!c)b=`<button type="button" data-cro="ini">${croArm[k]?'Toca otra vez: borra sus tiempos':'Iniciar'}</button>`;
+  else if(c.fin==null){
+    b=(c.laps.length<ds.length-1?`<button type="button" data-cro="pase">Pase ${ds[c.laps.length]} m</button>`:'')+'<button type="button" class="parar" data-cro="parar">Parar</button>';
+  }else b='<button type="button" class="sec" data-cro="seguir">Continuar</button><button type="button" class="sec" data-cro="reset">Reiniciar</button>';
+  return `<div class="cro-t" data-k="${k}">${fmtMs(c?(c.fin!=null?c.fin:msEn(c,performance.now())):0)}</div><div class="cro-b">${b}</div>`;
+}
+function pintaCro(k){
+  const el=$('cro-'+k);if(!el)return;
+  el.innerHTML=croHtml(ev(),k);el.classList.toggle('corre',!!(cros[k]&&cros[k].fin==null));
+}
+function escribeCro(k){
+  // Se trunca a centésimas el acumulado, y cada pase es la resta de acumulados: así los pases siempre suman el final.
+  const e=ev(),c=cros[k],ds=distancias(e),cs=m=>Math.floor(m/10);
+  toca(k,f=>{
+    ds.forEach(d=>{delete f.t[d];delete drafts[k+'|'+d]});delete f.t.final;delete drafts[k+'|final'];f.estado='';f.auto=true;
+    if(!c)return;
+    let prev=0;c.laps.forEach((m,i)=>{const a=cs(m);f.t[ds[i]]=deCs(a-prev);prev=a});
+    if(c.fin!=null){
+      const a=cs(c.fin);f.t.final=deCs(a);
+      if(c.laps.length===ds.length-1)f.t[ds[ds.length-1]]=deCs(a-prev);else f.auto=false;
+    }
+  });
+  ds.forEach(d=>{const i=$('i-'+k+'-'+d);if(i)i.value=fila(k).t[d]||''});
+  refrescaDerivados(k);
+}
+document.addEventListener('pointerdown',e_=>{
+  if(e_.target.closest&&e_.target.closest('button[data-cro]'))ultimoToque={t:e_.timeStamp,visto:performance.now()};
+},true);
+$('carriles').addEventListener('click',e_=>{
+  const b=e_.target.closest('button[data-cro]');if(!b)return;
+  const k=b.closest('.carril').dataset.k,act=b.dataset.cro,c=cros[k];
+  // La hora que vale es la del toque; el clic solo confirma que no fue un gesto para desplazar la página.
+  const t=ultimoToque&&performance.now()-ultimoToque.visto<1500?ultimoToque.t:e_.timeStamp;ultimoToque=null;
+  if(act==='ini'){
+    const f=fila(k),hay=Object.keys(f.t).length>0;
+    if(hay&&!croArm[k]){croArm[k]=true;pintaCro(k);setTimeout(()=>{if(croArm[k]){delete croArm[k];pintaCro(k)}},3000);return}
+    delete croArm[k];
+    cros[k]={p:performance.timeOrigin+t,d:Date.now()-(performance.now()-t),laps:[],fin:null};
+    if(hay)escribeCro(k);
+  }else if(act==='pase'&&c){
+    const m=msEn(c,t),ant=c.laps.length?c.laps[c.laps.length-1]:0;
+    if(m-ant<3000){aviso('Toque ignorado: fue muy seguido al anterior');return}
+    c.laps.push(m);escribeCro(k);
+  }else if(act==='parar'&&c){
+    const m=msEn(c,t),ant=c.laps.length?c.laps[c.laps.length-1]:0;
+    if(m-ant<1000){aviso('Toque ignorado: fue muy seguido al anterior');return}
+    c.fin=m;escribeCro(k);
+  }else if(act==='seguir'&&c){c.fin=null;escribeCro(k)}
+  else if(act==='reset'){delete cros[k]}
+  guardaCros();pintaCro(k);
+});
+(function cuadro(){
+  document.querySelectorAll('.cro-t[data-k]').forEach(el=>{const c=cros[el.dataset.k];if(c&&c.fin==null)el.textContent=fmtMs(msEn(c,performance.now()))});
+  requestAnimationFrame(cuadro);
+})();
 
 /* ---------- navegación ---------- */
 const ORDEN=[];SEMBRADO.forEach((e,i)=>e.series.forEach((s,j)=>ORDEN.push([i,j])));
